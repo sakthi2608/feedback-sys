@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Feedback Dashboard</title>
+  <style>
+    /* ===== Navbar Styling ===== */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px; /* enough padding to prevent cutoff */
+      background-color: #007bff;
+      color: white;
+      width: 100%;
+      box-sizing: border-box;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+    }
+    nav .title {
+      font-weight: bold;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    nav .links {
+      display: flex;
+      gap: 20px;
+      flex-shrink: 0;
+      white-space: nowrap; /* prevents cutoff */
+    }
+    nav .links a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    nav .links a:hover {
+      text-decoration: underline;
+    }
+
+    /* ===== Body & Container ===== */
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f6fa;
+      margin: 0;
+      padding-top: 80px; /* space for fixed navbar */
+    }
+
+    .container {
+      width: 95%;
+      max-width: 1000px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+      word-break: break-word;
+    }
+
+    th {
+      background: #007bff;
+      color: white;
+    }
+
+    button {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { 
+      background: #b02a37; 
+    }
+
+    /* Responsive navbar padding */
+    @media (max-width: 500px) {
+      nav {
+        padding: 10px 15px;
+      }
+      nav .links {
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Navbar ===== -->
+  <nav>
+    <div class="title">Feedback Collection System</div>
+    <div class="links">
+      <a href="/logout">Logout</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>📋 Feedback Dashboard</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Rating</th>
+          <th>Comments</th>
+          <th>Date & Time</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% feedbacks.forEach(fb => { %>
+          <tr data-id="<%= fb._id %>">
+            <td><%= fb.name %></td>
+            <td><%= fb.email %></td>
+            <td><%= fb.rating %> ⭐</td>
+            <td><%= fb.comments %></td>
+            <td><%= fb.createdAt.toLocaleString() %></td>
+            <td>
+              <button type="button" onclick="deleteFeedback('<%= fb._id %>')">Delete</button>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    async function deleteFeedback(id) {
+      if(!confirm('Are you sure you want to delete this feedback?')) return;
+
+      try {
+        const res = await fetch(`/delete/${id}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          const row = document.querySelector(`tr[data-id='${id}']`);
+          if (row) row.remove();
+        } else {
+          alert('❌ Error deleting feedback: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error(err);
+        alert('❌ Error deleting feedback');
+      }
+    }
+  </script>
+
+</body>
+</html>

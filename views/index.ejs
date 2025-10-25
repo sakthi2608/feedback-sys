@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Feedback Form</title>
+  
+  <style>
+    /* ===== Navbar Styling ===== */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      background-color: #007bff;
+      color: white;
+      width: 100%;
+      box-sizing: border-box;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+    }
+    nav .title {
+      font-weight: bold;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    nav .links {
+      display: flex;
+      gap: 20px;
+      flex-shrink: 0;
+      white-space: nowrap; /* Prevent cutoff */
+    }
+    nav .links a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    nav .links a:hover {
+      text-decoration: underline;
+    }
+
+    /* ===== Page Styling ===== */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f7f9fc;
+      padding-top: 80px; /* Space for fixed navbar */
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 350px;
+      max-width: 95%; /* responsive width for small screens */
+      text-align: center;
+    }
+
+    input, textarea {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .stars {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+      gap: 5px;
+      flex-direction: row-reverse;
+    }
+    .stars input { display: none; }
+    .stars label {
+      font-size: 25px;
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .stars input:checked ~ label,
+    .stars label:hover,
+    .stars label:hover ~ label {
+      color: gold;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: background 0.3s;
+    }
+    button:hover { background: #0056b3; }
+
+    #feedbackMessage {
+      margin-top: 10px;
+      color: green;
+      font-weight: bold;
+    }
+
+    /* Responsive fix for very small screens */
+    @media (max-width: 400px) {
+      nav {
+        padding: 10px 15px;
+      }
+      nav .links {
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== Navbar ===== -->
+   
+  <nav>
+    <div class="title">Feedback Collection System</div>
+    <div class="links">
+      <% if (!session.admin) { %>
+        <a href="/admin">Admin Login</a>
+      <% } else { %>
+        <a href="/logout">Logout</a>
+      <% } %>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2>📝 Submit Feedback</h2>
+    <form id="feedbackForm">
+      <input type="text" name="name" placeholder="Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+
+      <!-- ⭐ Star Rating System -->
+      <div class="stars">
+        <% for (let i = 5; i >= 1; i--) { %>
+          <input type="radio" id="star<%= i %>" name="rating" value="<%= i %>" required>
+          <label for="star<%= i %>">★</label>
+        <% } %>
+      </div>
+
+      <textarea name="comments" placeholder="Comments" rows="3" required></textarea>
+      <button type="submit">Submit</button>
+    </form>
+
+    <div id="feedbackMessage"></div>
+  </div>
+
+  <script>
+    document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        name: form.name.value,
+        email: form.email.value,
+        rating: form.rating.value,
+        comments: form.comments.value
+      };
+
+      try {
+        const res = await fetch('/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+          document.getElementById('feedbackMessage').innerText = '✅ Feedback submitted successfully!';
+          form.reset();
+        } else {
+          const text = await res.text();
+          document.getElementById('feedbackMessage').innerText = '❌ Error: ' + text;
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById('feedbackMessage').innerText = '❌ Error submitting feedback';
+      }
+    });
+  </script>
+ 
+</body>
+</html>
